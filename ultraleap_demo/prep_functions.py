@@ -3,12 +3,12 @@ from . import *
 from .process_tools import *
 from .transformer import *
 from .objects import *
+from dtw import dtw
 import numpy as np
 import leap
 import time
 import sys
 import pickle
-from dtw import dtw
 import os
 
 
@@ -102,25 +102,78 @@ def combine_predicted_features(predictions):
 
 
 
-def classify_gesture(performed_states, predicted_states, lookup_table):
-    combined_states = performed_states + predicted_states
+# def classify_gesture(performed_states, predicted_states, lookup_table):
+#     combined_states = performed_states + predicted_states
+#     best_gesture = None
+#     best_score = float("inf")
+
+#     gesture_distances = {gesture: float("inf") for gesture in lookup_table.keys()}
+
+#     for gesture, sequences in lookup_table.items():
+
+#         for sequence in sequences:
+#             perform_states = sequence['perform']
+#             # print(perform_states)
+#             predict_states = sequence['predict']
+#             lookup_combined_states = perform_states + predict_states
+#             distance = dtw(combined_states, lookup_combined_states)
+#             if distance.distance < gesture_distances[gesture]:
+#                 gesture_distances[gesture] = distance.distance
+#             if distance.distance < best_score:
+#                 best_score = distance.distance
+#                 best_gesture = gesture
+
+#     return best_gesture, gesture_distances
+
+def dtw_distance(sequence1, sequence2):
+    distance = dtw(sequence1, sequence2)
+    return distance.distance
+
+def normalize_sequence(sequence, target_length):
+    normalized_sequence = []
+    sequence_length = len(sequence)
+    
+    for i in range(target_length):
+        index = int((i / target_length) * sequence_length)
+        normalized_sequence.append(sequence[index])
+    
+    return np.array(normalized_sequence)
+
+def classify_gesture(classify_sequence, lookup_table, target_length=16, k=1):
     best_gesture = None
     best_score = float("inf")
 
-    gesture_distances = {gesture: float("inf") for gesture in lookup_table.keys()}
+    normalized_classify_sequence = normalize_sequence(classify_sequence, target_length)
+
+    gesture_distances = {gesture: (0, float("inf")) for gesture in lookup_table.keys()}
+    gesture_largest_distance = {gesture: [(0, 0)] * k for gesture in lookup_table.keys()}
 
     for gesture, sequences in lookup_table.items():
+        for i, sequence in enumerate(sequences):
+            normalized_sequence = normalize_sequence(sequence, target_length)
 
-        for sequence in sequences:
-            perform_states = sequence['perform']
-            # print(perform_states)
-            predict_states = sequence['predict']
-            lookup_combined_states = perform_states + predict_states
-            distance = dtw(combined_states, lookup_combined_states)
-            if distance.distance < gesture_distances[gesture]:
-                gesture_distances[gesture] = distance.distance
-            if distance.distance < best_score:
-                best_score = distance.distance
+            distance = dtw_distance(normalized_classify_sequence, normalized_sequence)
+            
+            if distance < gesture_distances[gesture][1]:
+                gesture_distances[gesture] = (i, distance)
+
+            if distance > gesture_largest_distance[gesture][0][1]:
+                # Replace the smallest distance with the current distance
+                gesture_largest_distance[gesture][0] = (i, distance)
+                # Sort the list so that the smallest distance is always at the beginning
+                gesture_largest_distance[gesture].sort(key=lambda x: x[1])
+            
+            if distance < best_score:
+                best_score = distance
                 best_gesture = gesture
 
-    return best_gesture, gesture_distances
+    return best_gesture, best_score, gesture_distances
+
+def get_new_states_dict(dhg_to_use, smoother=False):
+    smoother_key = [s for s in list(dhg_to_use.clean_features.keys()) if 'smoother' in s][0]
+    palm_orientations = dhg_to_use.clean_features["palm_orientations"]
+    siamese_similarity = dhg_to_use.clean_features[smoother_key] if smoother else dhg_to_use.clean_features["siamese_similarity"]
+    moving_directions = dhg_to_use.clean_features["moving_directions"]
+    # moving_directions = get_all_moving_directions(dhg, dhg_fe, stationary_threshold, moving_direction_indexes, normalize, dimensions, filtered=filtered)
+    states = get_all_states(dhg_to_use, moving_directions, palm_orientations, siamese_similarity)
+    return states

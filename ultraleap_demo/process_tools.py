@@ -384,10 +384,11 @@ def reduce_stationary_states(dhg, states_dict, stationary_digit = "4", pcts = No
     reduced_states_dict = remove_states(dhg, states_dict, states_to_reduce, pcts=pcts, side=side, random_seed=random_seed)
     return reduced_states_dict
 
-def get_new_states_dict(dhg):
-    palm_orientations = dhg.clean_features["palm_orientations"]
-    siamese_similarity = dhg.clean_features["siamese_similarity"]
-    moving_directions = dhg.clean_features["moving_directions"]
+def get_new_states_dict(dhg_to_use, smoother=False):
+    smoother_key = [s for s in list(dhg_to_use.clean_features.keys()) if 'smoother' in s][0]
+    palm_orientations = dhg_to_use.clean_features["palm_orientations"]
+    siamese_similarity = dhg_to_use.clean_features[smoother_key] if smoother else dhg_to_use.clean_features["siamese_similarity"]
+    moving_directions = dhg_to_use.clean_features["moving_directions"]
     # moving_directions = get_all_moving_directions(dhg, dhg_fe, stationary_threshold, moving_direction_indexes, normalize, dimensions, filtered=filtered)
-    states = get_all_states(dhg, moving_directions, palm_orientations, siamese_similarity)
+    states = get_all_states(dhg_to_use, moving_directions, palm_orientations, siamese_similarity)
     return states

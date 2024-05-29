@@ -1,3 +1,4 @@
+from .lookup_table import *
 from .training_history import *
 from .classes import *
 from .prep_functions import *
@@ -11,7 +12,7 @@ import leap
 import time
 import sys
 import pickle
-
+import os
 
 
 
@@ -105,12 +106,12 @@ MODEL_DIRS = [MODEL_16_4, MODEL_32_8, MODEL_16_8, MODEL_32_16, MODEL_16_12, MODE
 MODEL_FILES = [os.path.join(model_dir, model_file) for model_dir in MODEL_DIRS for model_file in os.listdir(model_dir)]
 
 # Load the history
-histories = {}
-for history_file in HISTORY_FILES:
-    keyname = history_file.split("\\")[-1].split("step_")[-1].split("_batch")[0]
-    with open(history_file, 'rb') as f:
-        history = pickle.load(f)
-    histories[keyname] = history
+# histories = {}
+# for history_file in HISTORY_FILES:
+#     keyname = history_file.split("\\")[-1].split("step_")[-1].split("_batch")[0]
+#     with open(history_file, 'rb') as f:
+#         history = pickle.load(f)
+#     histories[keyname] = history
 
 # Load the mappings
 mappings = {}
@@ -158,3 +159,101 @@ handpose_model_paths = {os.path.join(handpose_model_dir, p).split("\\")[-1].spli
 
 handpose_unfiltered = HandPose(handpose_model_paths["dhg"])
 handpose_filtered = HandPose(handpose_model_paths["filtereddhg"])
+
+
+
+
+model_dict = {
+    16: {
+        1:None,
+        4:None,
+        8:None,
+        12:None,
+    },
+    32: {
+        1:None,
+        8:None,
+        16:None,
+        24:None,
+    }
+}
+
+models_dir = os.path.join(os.getcwd(), "ultraleap_demo\\time_series_models")
+multi_step_dir = os.path.join(models_dir, "multi_step")
+single_step_dir = os.path.join(models_dir, "single_step")
+
+
+device = torch.device('cpu') # inference on CPU
+# Load the models
+for ratio in os.listdir(multi_step_dir):
+    for model_name in os.listdir(os.path.join(multi_step_dir, ratio)):
+        sequence_length, output_window = model_name.split("_")
+
+        model_file = os.listdir(os.path.join(multi_step_dir, ratio, model_name, "model"))[-1]
+        feature_ntokens=[len(moving_direction_state_mapping)+1, len(palm_orientation_state_mapping)+1, len(hand_pose_state_mapping)+1]
+        if model_name == "32_24":
+            feature_ntokens[-1] -= 1
+        model = TransformerModel(num_features=3, feature_ntokens=feature_ntokens, d_model=512, nhead=8, num_layers=6, max_len=int(sequence_length)).to(device)
+        model.load_state_dict(torch.load(os.path.join(multi_step_dir, ratio, model_name, "model", model_file), map_location=device))
+        model.eval()
+        model_dict[int(sequence_length)][int(output_window)] = model
+
+
+for model_name in os.listdir(single_step_dir):
+    sequence_length, output_window = model_name.split("_")
+
+    model_file = os.listdir(os.path.join(single_step_dir, model_name, "model"))[-1]
+    feature_ntokens=[len(moving_direction_state_mapping)+1, len(palm_orientation_state_mapping)+1, len(hand_pose_state_mapping)+1]
+    if model_name == "32_24":
+        feature_ntokens[-1] -= 1
+    model = TransformerModel(num_features=3, feature_ntokens=feature_ntokens, d_model=512, nhead=8, num_layers=6, max_len=int(sequence_length)).to(device)
+    model.load_state_dict(torch.load(os.path.join(single_step_dir, model_name, "model", model_file), map_location=device))
+    model.eval()
+    model_dict[int(sequence_length)][int(output_window)] = model
+
+
+def get_gesture_result(frames, sequence_length, output_window, lookup_table, target_length, threshold=0.05, device='cpu'):
+    gesture_mapped_names = {
+        "gesture_7":"Swipe Right",
+        "gesture_8":"Swipe Left",
+        "gesture_9":"Swipe Up",
+        "gesture_10":"Swipe Down",
+    }
+    mapped_moving_directions = frames.mapped_moving_directions
+    mapped_palm_orientations = frames.mapped_palm_orientations
+    mapped_similarity_states = frames.similarity_states
+
+    combined = combine_mapped_separated_sequences([mapped_moving_directions], [mapped_palm_orientations], [mapped_similarity_states])[0]
+    to_predict_sequence = make_predict_frame_sequence(combined, sequence_length, output_window)
+    model_dict[sequence_length][output_window] = model_dict[sequence_length][output_window].to(device)
+    model = model_dict[sequence_length][output_window]
+    model.eval()
+    to_predict_sequence = to_predict_sequence.to(device)
+    
+    predicted_states = combine_predicted_features(make_prediction(model, to_predict_sequence, output_window))
+    performed_states = to_predict_sequence.tolist()[0][:-output_window]
+    classify_sequence = performed_states + predicted_states
+
+    gesture, _, scores = classify_gesture(classify_sequence=classify_sequence, lookup_table=lookup_table, target_length=target_length)
+
+    gesture_scores = [l[1] for l in list(scores.values())]
+    # Calculate the sum of all scores
+    total_score = sum(gesture_scores)
+
+    # Normalize the scores
+    normalized_scores = [score / total_score for score in gesture_scores]
+
+    # Sort the normalized scores in descending order
+    sorted_scores = sorted(normalized_scores, reverse=True)
+
+    # Calculate the difference between the best score and the second best score
+    score_difference = sorted_scores[0] - sorted_scores[1]
+    # print(normalized_scores)
+
+    # Check if the score difference is below the threshold
+    if score_difference < threshold:
+        classified_gesture = "Unknown"
+    else:
+        classified_gesture = gesture_mapped_names[gesture]
+
+    return classified_gesture, score_difference
