@@ -1,5 +1,5 @@
 from ultraleap_demo.load_demo import *
-from dhg import DHG
+from data.dhg import DHG
 import numpy as np
 import argparse
 import leap

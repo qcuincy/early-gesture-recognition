@@ -1,12 +1,10 @@
 from ultraleap_demo.load_demo import *
-from dhg import DHG
+from data.dhg import DHG
 import os
 import leap
 import numpy as np
 import cv2
 import argparse
-
-
 
 
 top_dirs = 3
@@ -19,7 +17,9 @@ output_window = 1
 max_frames = 100
 target_length = 32
 device = 'cpu'
+data_path = os.getcwd()
 def main(
+        data_path,
         top_dirs,
         window_size,
         stationary_threshold_ratio,
@@ -70,7 +70,7 @@ def main(
             self.data_dir = data_dir
             self.gesture_to_record = "Swipe Right"
             self.recording = False
-            self.record_timeout = 500 # add a frame every 0.5
+            self.record_timeout = 100 # add a frame every 0.1 seconds
             self.current_time = leap.get_now() / 1000
 
             self.current_tracking_mode = leap.TrackingMode.Desktop
@@ -437,15 +437,15 @@ def main(
             self.canvas.render_hands(event)
 
 
-    def make_data_dir():
-        data_dir = os.path.join(os.getcwd(), "hand_gesture_data")
+    def make_data_dir(data_path):
+        data_dir = os.path.join(data_path, "hand_gesture_data")
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
         return data_dir
 
 
 
-    data_dir = make_data_dir()
+    data_dir = make_data_dir(data_path)
 
     params = Params(data_dir)
     canvas = Canvas(params)
@@ -525,6 +525,7 @@ def main(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Customize parameters for data collection.')
+    parser.add_argument('-dp', '--data_path', type=str, help='Default path to store gesture sequences.', default=data_path)
     parser.add_argument('-td', '--top_dirs', type=int, help='Top number of directions to consider when determining the moving direction over the sliding window', default=3)
     parser.add_argument('-ws', '--window_size', type=int, help='Size of the sliding window for calculating the moving direction', default=16)
     parser.add_argument('-str', '--stationary_threshold_ratio', type=float, help='Stationary threshold to determine if the hand is moving or stationary', default=1.5)
@@ -535,6 +536,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(
+        args.data_path,
         args.top_dirs,
         args.window_size,
         args.stationary_threshold_ratio,

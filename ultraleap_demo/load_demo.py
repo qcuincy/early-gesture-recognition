@@ -15,8 +15,6 @@ import pickle
 import os
 
 
-
-
 RESULTS_DIR = os.path.join(os.getcwd(), 'ultraleap_demo')
 TIME_SERIES_MODELS_DIR = os.path.join(RESULTS_DIR, 'time_series_models')
 CLASSIFIER_MODELS_DIR = os.path.join(RESULTS_DIR, 'classifier_models')
