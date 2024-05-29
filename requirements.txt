@@ -9,4 +9,4 @@ plotly
 preprocess
 scikit_learn
 scipy
-torch
+torch<2.0
