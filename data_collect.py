@@ -530,9 +530,9 @@ if __name__ == "__main__":
     parser.add_argument('-ws', '--window_size', type=int, help='Size of the sliding window for calculating the moving direction', default=16)
     parser.add_argument('-str', '--stationary_threshold_ratio', type=float, help='Stationary threshold to determine if the hand is moving or stationary', default=1.5)
     parser.add_argument('-sl', '--similarity_lookback', type=int, help='How many frames to look back to when calculating the similarity between the current frame and the chosen frame', default=2)
-    parser.add_argument('-st', '--similarity_threshold', type=float, help='Similarity threshold', default=0.9)
-    parser.add_argument('-seq', '--sequence_length', type=int, help='Sequence length', default=32)
-    parser.add_argument('-mf', '--max_frames', type=int, help='Maximum frames', default=100)
+    parser.add_argument('-st', '--similarity_threshold', type=float, help='Similarity threshold to determine if the current frame is similar to the chosen frame', default=0.9)
+    parser.add_argument('-seq', '--sequence_length', type=int, help='The length of the sequence to decide the Transformer model', default=32)
+    parser.add_argument('-mf', '--max_frames', type=int, help='Maximum number of frames to store in Frames object', default=100)
 
     args = parser.parse_args()
     main(

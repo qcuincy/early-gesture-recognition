@@ -75,7 +75,7 @@ def main(
 
     class Canvas:
         def __init__(self):
-            self.name = "Python Gemini Visualiser"
+            self.name = "Early Hand Gesture Recognition Demo"
             self.screen_size = [500, 700]
             self.hands_colour = (255, 255, 255)
             self.font_colour = (220, 220, 220)
@@ -83,8 +83,8 @@ def main(
             self.hands_format = "Skeleton"
             self.output_image = np.zeros((self.screen_size[0], self.screen_size[1], 3), np.uint8)
             self.tracking_mode = None
-            self.classification_interval = 2000000
-            self.classification_timer = leap.get_now()
+            self.classification_interval = 2000 # classify gesture every 2 seconds
+            self.classification_timer = leap.get_now() / 1000
             self.last_gesture = 'Unknown'
             self.last_gesture_confidence = 1.0
 
@@ -114,7 +114,7 @@ def main(
                 orientation_string = f"orientation: {inverted_orientation_mapping[int(inverted_palm_orientation_state_mapping[frames.mapped_palm_orientations[-1]])]}"
                 pose_string = f"hand pose: {frames.similarity_states[-1]}"
                 
-                current_time = leap.get_now()
+                current_time = leap.get_now() / 1000
                 if current_time - self.classification_timer > self.classification_interval:
                     classified_gesture,confidence = get_gesture_result(frames, sequence_length, output_window, prepared_train_lookup_table, target_length, threshold=confidence_threshold, device=device)
                     if classified_gesture != self.last_gesture:
@@ -322,18 +322,19 @@ def main(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Customize parameters for the demo.')
-    parser.add_argument('-td', '--top_dirs', type=int, help='Top directories', default=3)
-    parser.add_argument('-ws', '--window_size', type=int, help='Window size', default=16)
-    parser.add_argument('-str', '--stationary_threshold_ratio', type=float, help='Stationary threshold ratio', default=1.5)
-    parser.add_argument('-sl', '--similarity_lookback', type=int, help='Similarity lookback', default=2)
-    parser.add_argument('-st', '--similarity_threshold', type=float, help='Similarity threshold', default=0.9)
-    parser.add_argument('-seq', '--sequence_length', type=int, help='Sequence length', default=32)
-    parser.add_argument('-ow', '--output_window', type=int, help='Output window', default=1)
-    parser.add_argument('-mf', '--max_frames', type=int, help='Maximum frames', default=100)
-    parser.add_argument('-tl', '--target_length', type=int, help='Target length', default=32)
-    parser.add_argument('-ts', '--test_size', type=float, help='Test size', default=0.4)
-    parser.add_argument('-ct', '--confidence_threshold', type=float, help='Confidence threshold', default=0.01)
-    parser.add_argument('-d', '--device', type=str, help='Device', default='cpu')
+    parser.add_argument('-td', '--top_dirs', type=int, help='Top number of directions to consider when determining the moving direction over the sliding window', default=3)
+    parser.add_argument('-ws', '--window_size', type=int, help='Size of the sliding window for calculating the moving direction', default=16)
+    parser.add_argument('-str', '--stationary_threshold_ratio', type=float, help='Stationary threshold to determine if the hand is moving or stationary', default=1.5)
+    parser.add_argument('-sl', '--similarity_lookback', type=int, help='How many frames to look back to when calculating the similarity between the current frame and the chosen frame', default=2)
+    parser.add_argument('-st', '--similarity_threshold', type=float, help='Similarity threshold to determine if the current frame is similar to the chosen frame', default=0.9)
+    parser.add_argument('-seq', '--sequence_length', type=int, help='The length of the sequence to decide the Transformer model', default=32)
+    parser.add_argument('-ow', '--output_window', type=int, help='The output window to decide the Transformer model', default=1)
+    parser.add_argument('-tl', '--target_length', type=int, help='Target length for sequence normalisation', default=32)
+    parser.add_argument('-mf', '--max_frames', type=int, help='Maximum number of frames to store in Frames object', default=100)
+    parser.add_argument('-ts', '--test_size', type=float, help='Test size for lookup table', default=0.4)
+    parser.add_argument('-ct', '--confidence_threshold', type=float, help='Gesture classification confidence threshold, if the confidence is below this threshold, the gesture will be classified as Unknown', default=0.01)
+    parser.add_argument('-d', '--device', type=str, help='Device to run the model on, requires a CUDA enabled device for GPU', default='cpu')
+    parser.add_argument('-T', '--classification_timeout', type=int, help='The time interval to classify gesture', default=2000)
 
     args = parser.parse_args()
     main(
@@ -350,3 +351,50 @@ if __name__ == "__main__":
         args.confidence_threshold,
         args.device,
     )
+    def get_performer_states_dict(dhg_data, smoother=True):
+        performer_states_dict = {}
+        for subject in dhg_data.subjects:
+            for gesture in dhg_data.gestures:
+                for sample in dhg_data.samples:
+                    performer_states_dict[(subject, gesture, sample)] = dhg_data.get_performer_state(subject, gesture, sample, smoother=smoother)
+        return performer_states_dict
+
+    def normalize_performer_state(performer_states_dict, by_subject=True):
+        normalized_performer_states_dict = {}
+        for key, performer_state in performer_states_dict.items():
+            if by_subject:
+                subject = key[0]
+                if subject not in normalized_performer_states_dict:
+                    normalized_performer_states_dict[subject] = {}
+                normalized_performer_states_dict[subject][key[1:]] = performer_state
+            else:
+                normalized_performer_states_dict[key] = performer_state
+        return normalized_performer_states_dict
+
+    def make_train_test_lookup_table(normalized_performer_states_dict, test_size=0.4, gestures=None):
+        train_lookup_table = []
+        test_lookup_table = []
+        for subject, gesture_samples in normalized_performer_states_dict.items():
+            for gesture, samples in gesture_samples.items():
+                if gestures is None or gesture in gestures:
+                    num_samples = len(samples)
+                    num_test_samples = int(num_samples * test_size)
+                    test_samples = samples[:num_test_samples]
+                    train_samples = samples[num_test_samples:]
+                    for sample in test_samples:
+                        test_lookup_table.append((subject, gesture, sample))
+                    for sample in train_samples:
+                        train_lookup_table.append((subject, gesture, sample))
+        return train_lookup_table, test_lookup_table
+
+    def normalize_lookup_table(lookup_table, target_length):
+        normalized_lookup_table = []
+        for subject, gesture, sample in lookup_table:
+            normalized_lookup_table.append((subject, gesture, sample[:target_length]))
+        return normalized_lookup_table
+
+    def lookup_table_tensor(lookup_table):
+        tensor = []
+        for subject, gesture, sample in lookup_table:
+            tensor.append(sample)
+        return np.array(tensor)
