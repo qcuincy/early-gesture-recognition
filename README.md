@@ -16,13 +16,13 @@ This repository contains two main Python scripts for hand gesture recognition us
   - [Data Collection Script](#data-collection-script)
   - [Demo Script](#demo-script)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## Prerequisites
 
 Before running the scripts, make sure you have the following:
 
 - Ultraleap controller
+- [Ultraleap gemini](https://leap2.ultraleap.com/downloads/)
 - Python 3.x installed
 - Required Python packages (listed in `requirements.txt`)
 
@@ -40,15 +40,16 @@ Before running the scripts, make sure you have the following:
 ### Data Collection
 
 1. Connect the Ultraleap controller to your computer.
-2. Open a terminal or command prompt and navigate to the directory where the `data_collect.py` script is located.
-3. Run the script using the following command:
+2. Launch the Ultraleap gemini hand tracking software.
+3. Open a terminal or command prompt and navigate to the directory where the `data_collect.py` script is located.
+4. Run the script using the following command:
 
    ```
    python data_collect.py
    ```
 
-4. The script will open a graphical interface showing the live hand tracking data.
-5. Use the following keys to interact with the script:
+5. The script will open a graphical interface showing the live hand tracking data.
+6. Use the following keys to interact with the script:
    - `q`: Exit the script.
    - `1`: Select "Swipe Right" gesture to record.
    - `2`: Select "Swipe Left" gesture to record.
@@ -56,20 +57,21 @@ Before running the scripts, make sure you have the following:
    - `4`: Select "Swipe Down" gesture to record.
    - `r`: Start recording the selected gesture.
    - `s`: Stop recording the gesture.
-6. The recorded gesture data will be saved in the `hand_gesture_data` directory.
+7. The recorded gesture data will be saved in the `hand_gesture_data` directory.
 
 ### Gesture Recognition Demo
 
 1. Connect the Ultraleap controller to your computer.
-2. Open a terminal or command prompt and navigate to the directory where the `demo.py` script is located.
-3. Run the script using the following command:
+2. Launch the Ultraleap gemini hand tracking software.
+3. Open a terminal or command prompt and navigate to the directory where the `demo.py` script is located.
+4. Run the script using the following command:
 
    ```
    python demo.py
    ```
 
-4. The script will open a graphical interface showing the live hand tracking data and recognised gesture.
-5. Use the following keys to interact with the script:
+5. The script will open a graphical interface showing the live hand tracking data and recognised gesture.
+6. Use the following keys to interact with the script:
    - `h`: Head-mounted display tracking mode.
    - `s`: Screen Top tracking mode.
    - `d`: Desktop tracking mode.
