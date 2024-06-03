@@ -40,7 +40,7 @@ Before running the scripts, make sure you have the following:
 ### Data Collection
 
 1. Connect the Ultraleap controller to your computer.
-2. Launch the Ultraleap gemini hand tracking software.
+2. Launch the Ultraleap gemini hand tracking software and open the control panel.
 3. Open a terminal or command prompt and navigate to the directory where the `data_collect.py` script is located.
 4. Run the script using the following command:
 
