@@ -115,6 +115,8 @@ You can customize the `demo.py` script's parameters by using command-line argume
 - `-ct, --confidence_threshold` (float): Gesture classification confidence threshold; if the confidence is below this threshold, the gesture will be classified as Unknown. (Default: 0.01)
 - `-d, --device` (str): Device to run the model on (requires a CUDA-enabled device for GPU). (Default: 'cpu')
 - `-T, --classification_timeout` (int): The time interval for gesture classification. (Default: 2000)
+  - Note: If `-T, --classification_timeout` is too low you may experience performance issues. 
+
 Example usage:
 
 ```
