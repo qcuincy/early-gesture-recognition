@@ -86,7 +86,7 @@ You can customize the `data_collect.py` script's parameters by using command-lin
 - `-dp, --data_path`: Default path to store gesture sequences. (Default: current working directory)
 - `-td, --top_dirs`: Top number of directions to consider when determining the moving direction over the sliding window. (Default: 3)
 - `-ws, --window_size`: Size of the sliding window for calculating the moving direction. (Default: 16)
-- `-str, --stationary_threshold_ratio`: Stationary threshold to determine if the hand is moving or stationary. (Default: 1.5)
+- `-str, --stationary_threshold`: Stationary threshold to determine if the hand is moving or stationary. (Default: 1.5)
 - `-sl, --similarity_lookback`: How many frames to look back to when calculating the similarity between the current frame and the chosen frame. (Default: 2)
 - `-st, --similarity_threshold`: Similarity threshold to determine if the current frame is similar to the chosen frame. (Default: 0.9)
 - `-seq, --sequence_length`: The length of the sequence to decide the Transformer model. (Default: 32)
@@ -103,8 +103,8 @@ python data_collect.py -dp "C:\path\to\data_folder" -td 3 -ws 16 -str 1.5 -sl 2 
 You can customize the `demo.py` script's parameters by using command-line arguments. Here are the available options:
 
 - `-td, --top_dirs` (int): Top number of directions to consider when determining the moving direction over the sliding window. (Default: 3)
-- `-ws, --window_size` (int): Size of the sliding window for calculating the moving direction. (Default: 16)
-- `-str, --stationary_threshold_ratio` (float): Stationary threshold to determine if the hand is moving or stationary. (Default: 1.5)
+- `-ws, --window_size` (int): Size of the sliding window for calculating the moving direction. The **larger** the sliding window size the smoother the motion (e.g. 32/64) . Conversely a **smaller** window size (e.g. 4/8) will result in more responsive motion but may be more susceptible to noise (Default: 16)
+- `-str, --stationary_threshold` (float): Stationary threshold to determine if the hand is moving or stationary. A **larger** threshold will result in more states classified as stationary, vice versa for **smaller** thresholds but may result in noisey motion. (Default: 1.5)
 - `-sl, --similarity_lookback` (int): How many frames to look back to when calculating the similarity between the current frame and the chosen frame. (Default: 2)
 - `-st, --similarity_threshold` (float): Similarity threshold to determine if the current frame is similar to the chosen frame. (Default: 0.9)
 - `-seq, --sequence_length` (int): The length of the sequence to decide the Transformer model. (Default: 32)
