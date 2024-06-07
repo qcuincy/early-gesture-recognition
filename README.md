@@ -49,6 +49,7 @@ Before running the scripts, make sure you have the following:
    ```
 
 4. The script will open a graphical interface showing the live hand tracking data.
+<img src=https://i.ibb.co/2K4gtcy/datacollectpy-screenshot.png width=50%>
 5. Use the following keys to interact with the script:
    - `q`: Exit the script.
    - `1`: Select "Swipe Right" gesture to record.
@@ -57,7 +58,7 @@ Before running the scripts, make sure you have the following:
    - `4`: Select "Swipe Down" gesture to record.
    - `r`: Start recording the selected gesture.
    - `s`: Stop recording the gesture.
-6. The recorded gesture data will be saved in the `hand_gesture_data` directory.
+7. The recorded gesture data will be saved in the `hand_gesture_data` directory.
 
 ### Gesture Recognition Demo
 
@@ -70,6 +71,7 @@ Before running the scripts, make sure you have the following:
    ```
 
 4. The script will open a graphical interface showing the live hand tracking data and recognised gesture.
+<img src=https://i.ibb.co/TBCjsjS/demopy-screenshot.png width=50%>
 5. Use the following keys to interact with the script:
    - `h`: Head-mounted display tracking mode.
    - `s`: Screen Top tracking mode.
