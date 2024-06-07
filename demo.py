@@ -10,8 +10,8 @@ data_dir = os.path.join(os.getcwd(), "data")
 dhg_data = DHG(data_dir)
 
 top_dirs = 3
-window_size = 16
-stationary_threshold_ratio = 1.5
+window_size = 3
+stationary_threshold = 1.3
 similarity_lookback = 2
 similarity_threshold = 0.9
 sequence_length = 32
@@ -25,7 +25,7 @@ device = 'cpu'
 def main(
         top_dirs,
         window_size,
-        stationary_threshold_ratio,
+        stationary_threshold,
         similarity_lookback,
         similarity_threshold,
         sequence_length,
@@ -59,7 +59,7 @@ def main(
         window_size=window_size,
         top_dirs=top_dirs,
         similarity_lookback=similarity_lookback,
-        stationary_threshold_ratio=stationary_threshold_ratio,
+        stationary_threshold_ratio=stationary_threshold,
         moving_direction_indexes=moving_direction_indexes,
         similarity_threshold=similarity_threshold,
         moving_direction_mapping=moving_direction_state_mapping, 
@@ -324,7 +324,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Customize parameters for the demo.')
     parser.add_argument('-td', '--top_dirs', type=int, help='Top number of directions to consider when determining the moving direction over the sliding window', default=3)
     parser.add_argument('-ws', '--window_size', type=int, help='Size of the sliding window for calculating the moving direction', default=16)
-    parser.add_argument('-str', '--stationary_threshold_ratio', type=float, help='Stationary threshold to determine if the hand is moving or stationary', default=1.5)
+    parser.add_argument('-str', '--stationary_threshold', type=float, help='Stationary threshold to determine if the hand is moving or stationary', default=1.5)
     parser.add_argument('-sl', '--similarity_lookback', type=int, help='How many frames to look back to when calculating the similarity between the current frame and the chosen frame', default=2)
     parser.add_argument('-st', '--similarity_threshold', type=float, help='Similarity threshold to determine if the current frame is similar to the chosen frame', default=0.9)
     parser.add_argument('-seq', '--sequence_length', type=int, help='The length of the sequence to decide the Transformer model', default=32)
@@ -340,7 +340,7 @@ if __name__ == "__main__":
     main(
         args.top_dirs,
         args.window_size,
-        args.stationary_threshold_ratio,
+        args.stationary_threshold,
         args.similarity_lookback,
         args.similarity_threshold,
         args.sequence_length,

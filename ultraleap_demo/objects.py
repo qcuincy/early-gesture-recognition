@@ -332,7 +332,8 @@ class Frames():
             
 
         
-
+    def get_recent_frame_data(self):
+        return np.array([self.frames[-1].landmarks.landmarks])
 
     def get_frames_data(self, frames = None):
         frames = self.frames if frames is None else frames
