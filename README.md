@@ -15,6 +15,7 @@ This repository contains two main Python scripts for hand gesture recognition us
 - [Customization](#customization)
   - [Data Collection Script](#data-collection-script)
   - [Demo Script](#demo-script)
+- [Walkthrough Notebook](#walkthrough-notebook)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -113,6 +114,14 @@ Example usage:
 ```
 python demo.py -td 3 -ws 16 -str 1.5 -sl 2 -st 0.9 -seq 32 -mf 100
 ```
+
+## Walkthrough Notebook
+
+The `walkthrough.ipynb` Jupyter Notebook provides a detailed guide on:
+
+1.  **Extracting Features:** How to derive discrete features (palm orientation, moving direction, hand pose) from the raw 3D hand landmark coordinates.
+2.  **Feature Engineering:** Explanation and code examples for calculating and visualizing these features.
+3.  **Gesture Classification (Optional):** A demonstration of how to use the extracted features to classify dynamic hand gestures using a lookup table and Transformer model.
 
 ## Contributing
 
