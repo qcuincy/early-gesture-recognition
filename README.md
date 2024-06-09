@@ -12,10 +12,10 @@ This repository contains two main Python scripts for hand gesture recognition us
 - [Usage](#usage)
   - [Data Collection](#data-collection)
   - [Gesture Recognition Demo](#gesture-recognition-demo)
+  - [Walkthrough Notebook](#walkthrough-notebook)
 - [Customization](#customization)
   - [Data Collection Script](#data-collection-script)
   - [Demo Script](#demo-script)
-- [Walkthrough Notebook](#walkthrough-notebook)
 - [Contributing](#contributing)
 
 ## Prerequisites
