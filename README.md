@@ -49,7 +49,8 @@ Before running the scripts, make sure you have the following:
    python data_collect.py
    ```
 
-5. The script will open a graphical interface showing the live hand tracking data. <img src=https://i.ibb.co/2K4gtcy/datacollectpy-screenshot.png width=50%>
+5. The script will open a graphical interface showing the live hand tracking data.
+   <img src=https://i.ibb.co/2K4gtcy/datacollectpy-screenshot.png width=50%>
 6. Use the following keys to interact with the script:
    - `q`: Exit the script.
    - `1`: Select "Swipe Right" gesture to record.
@@ -58,7 +59,11 @@ Before running the scripts, make sure you have the following:
    - `4`: Select "Swipe Down" gesture to record.
    - `r`: Start recording the selected gesture.
    - `s`: Stop recording the gesture.
-7. The recorded gesture data will be saved in the `hand_gesture_data` directory.
+7. The recorded gesture data will be saved in the `hand_gesture_data` directory. The data for trial `i` will consist of:
+   - A numpy file containing the discrete features of the gesture (`gesture_name_i.npy`).
+   - A numpy file containing the data required for visualizing the gesture (`gesture_name_i_hands.npy`).
+   - (Optional: see [Data Collection Script](#data-collection-script)) A numpy file containing the raw 3D hand landmark coordinates for each frame (`gesture_name_i_raw.npy`).
+
 
 ### Gesture Recognition Demo
 
@@ -71,12 +76,21 @@ Before running the scripts, make sure you have the following:
    python demo.py
    ```
 
-5. The script will open a graphical interface showing the live hand tracking data and recognised gesture. <img src=https://i.ibb.co/TBCjsjS/demopy-screenshot.png width=50%>
+5. The script will open a graphical interface showing the live hand tracking data and recognised gesture:
+   <img src=https://i.ibb.co/TBCjsjS/demopy-screenshot.png width=50%>
 6. Use the following keys to interact with the script:
    - `h`: Head-mounted display tracking mode.
    - `s`: Screen Top tracking mode.
    - `d`: Desktop tracking mode.
    - `q`: Exit the script.
+
+### Walkthrough Notebook
+
+The `walkthrough.ipynb` Jupyter Notebook provides a detailed guide on:
+
+1.  **Extracting Features:** How to derive discrete features (palm orientation, moving direction, hand pose) from the raw 3D hand landmark coordinates.
+2.  **Feature Engineering:** Explanation and code examples for calculating and visualizing these features.
+3.  **Gesture Classification (Optional):** A demonstration of how to use the extracted features to classify dynamic hand gestures using a lookup table and Transformer model.
 
 ## Customization
 
@@ -84,7 +98,9 @@ Before running the scripts, make sure you have the following:
 
 You can customize the `data_collect.py` script's parameters by using command-line arguments. Here are the available options:
 
+- `-R, --raw`: Collect raw data (no additional argument needed).
 - `-dp, --data_path`: Default path to store gesture sequences. (Default: current working directory)
+- `-RT, --record_timeout`: The time interval to record data. (Default: 100)
 - `-td, --top_dirs`: Top number of directions to consider when determining the moving direction over the sliding window. (Default: 3)
 - `-ws, --window_size`: Size of the sliding window for calculating the moving direction. (Default: 16)
 - `-str, --stationary_threshold`: Stationary threshold to determine if the hand is moving or stationary. (Default: 1.5)
@@ -123,14 +139,6 @@ Example usage:
 ```
 python demo.py -td 2 -ws 20 -ct 0.05 -d cuda
 ```
-
-## Walkthrough Notebook
-
-The `walkthrough.ipynb` Jupyter Notebook provides a detailed guide on:
-
-1.  **Extracting Features:** How to derive discrete features (palm orientation, moving direction, hand pose) from the raw 3D hand landmark coordinates.
-2.  **Feature Engineering:** Explanation and code examples for calculating and visualizing these features.
-3.  **Gesture Classification (Optional):** A demonstration of how to use the extracted features to classify dynamic hand gestures using a lookup table and Transformer model.
 
 ## Contributing
 
